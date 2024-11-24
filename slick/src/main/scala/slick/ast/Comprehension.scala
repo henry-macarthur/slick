@@ -15,7 +15,7 @@ final case class Comprehension[+Fetch <: Option[Node]](sym: TermSymbol,
                                                        distinct: Option[Node] = None,
                                                        fetch: Fetch = None,
                                                        offset: Option[Node] = None,
-                                                       forUpdate: Boolean = false) extends DefNode {
+                                                       rowLock: Option[RowLockType] = None) extends DefNode {
   type Self = Comprehension[Option[Node]]
   override def self: Self = this
   lazy val children =

@@ -50,6 +50,12 @@ import slick.util.QueryInterpolator.queryInterpolator
   *   <li>[[slick.jdbc.JdbcCapabilities.insertMultipleRowsWithSingleStatement]]:
   *      Oracle doesn't support this feature directly.
   *      There are several alternative ways, but the library doesn't support them, so far.</li>
+  *   <li>[[slick.jdbc.JdbcCapabilities.forNoKeyUpdate]]:
+  *      Oracle does not support FOR NO KEY UPDATE row locking.</li>
+  *   <li>[[slick.jdbc.JdbcCapabilities.forShare]]:
+  *      Oracle does not support FOR SHARE row locking.</li>
+  *   <li>[[slick.jdbc.JdbcCapabilities.forKeyShare]]:
+  *      Oracle does not support FOR KEY SHARE row locking.</li>
   * </ul>
   *
   * Note: The Oracle JDBC driver has problems with quoted identifiers. Columns
@@ -70,7 +76,10 @@ trait OracleProfile extends JdbcProfile {
       JdbcCapabilities.distinguishesIntTypes -
       JdbcCapabilities.supportsByte -
       JdbcCapabilities.returnMultipleInsertKey -
-      JdbcCapabilities.insertMultipleRowsWithSingleStatement
+      JdbcCapabilities.insertMultipleRowsWithSingleStatement -
+      JdbcCapabilities.forNoKeyUpdate -
+      JdbcCapabilities.forShare -
+      JdbcCapabilities.forKeyShare
 
   override protected lazy val useServerSideUpsert = true
   override protected lazy val useServerSideUpsertReturning = false

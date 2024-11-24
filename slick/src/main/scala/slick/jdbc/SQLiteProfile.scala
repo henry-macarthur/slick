@@ -73,6 +73,14 @@ import slick.util.QueryInterpolator.queryInterpolator
   *     in the meta data.</li>
   *   <li>[[slick.jdbc.JdbcCapabilities.returnMultipleInsertKey]]:
   *     SQLite returns the last generated key only.</li>
+  *   <li>[[slick.jdbc.JdbcCapabilities.forNoKeyUpdate]]:
+  *      SQLite does not support FOR NO KEY UPDATE row locking.</li>
+  *   <li>[[slick.jdbc.JdbcCapabilities.forShare]]:
+  *      SQLite does not support FOR SHARE row locking.</li>
+  *   <li>[[slick.jdbc.JdbcCapabilities.forKeyShare]]:
+  *      SQLite does not support FOR KEY SHARE row locking.</li>
+  *    <li>[[slick.jdbc.JdbcCapabilities.forUpdate]]:
+  *      SQLite does not support FOR UPDATE row locking.</li>
   * </ul>
   */
 trait SQLiteProfile extends JdbcProfile with JdbcActionComponent.MultipleRowsPerStatementSupport {
@@ -94,7 +102,10 @@ trait SQLiteProfile extends JdbcProfile with JdbcActionComponent.MultipleRowsPer
       JdbcCapabilities.supportsByte -
       JdbcCapabilities.distinguishesIntTypes -
       JdbcCapabilities.forUpdate -
-      JdbcCapabilities.returnMultipleInsertKey
+      JdbcCapabilities.returnMultipleInsertKey -
+      JdbcCapabilities.forNoKeyUpdate -
+      JdbcCapabilities.forShare -
+      JdbcCapabilities.forKeyShare
 
   class SQLiteModelBuilder(mTables: Seq[MTable], ignoreInvalidDefaults: Boolean)(implicit ec: ExecutionContext)
     extends JdbcModelBuilder(mTables, ignoreInvalidDefaults) {

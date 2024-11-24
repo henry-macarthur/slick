@@ -76,6 +76,12 @@ import slick.util.QueryInterpolator.queryInterpolator
   *   <li>[[slick.jdbc.JdbcCapabilities.returnMultipleInsertKey]]:
   *     Derby's driver is unable to properly return the generated key for insert statements with multiple values.
   *     (<a href="https://issues.apache.org/jira/browse/DERBY-3609" target="_parent"></a>DERBY-3609</li>)
+ *    <li>[[slick.jdbc.JdbcCapabilities.forNoKeyUpdate]]:
+ *      Derby does not support FOR NO KEY UPDATE row locking.</li>
+ *    <li>[[slick.jdbc.JdbcCapabilities.forShare]]:
+ *      Derby does not support FOR SHARE row locking.</li>
+ *    <li>[[slick.jdbc.JdbcCapabilities.forKeyShare]]:
+ *      Derby does not support FOR KEY SHARE row locking.</li>
   * </ul>
   */
 trait DerbyProfile extends JdbcProfile with JdbcActionComponent.MultipleRowsPerStatementSupport {
@@ -97,7 +103,10 @@ trait DerbyProfile extends JdbcProfile with JdbcActionComponent.MultipleRowsPerS
       JdbcCapabilities.booleanMetaData -
       JdbcCapabilities.supportsByte -
       RelationalCapabilities.repeat -
-      JdbcCapabilities.returnMultipleInsertKey
+      JdbcCapabilities.returnMultipleInsertKey -
+      JdbcCapabilities.forNoKeyUpdate -
+      JdbcCapabilities.forShare -
+      JdbcCapabilities.forKeyShare
 
   class ModelBuilder(mTables: Seq[MTable], ignoreInvalidDefaults: Boolean)(implicit ec: ExecutionContext)
     extends JdbcModelBuilder(mTables, ignoreInvalidDefaults) {
@@ -170,11 +179,9 @@ trait DerbyProfile extends JdbcProfile with JdbcActionComponent.MultipleRowsPerS
     override protected val supportsLiteralGroupBy = true
     override protected val quotedJdbcFns: Some[Vector[Library.JdbcFunction]] = Some(Vector(Library.User))
 
-    override protected def buildForUpdateClause(forUpdate: Boolean) = {
-      super.buildForUpdateClause(forUpdate)
-      if (forUpdate) {
-        b" with RS "
-      }
+    override protected def buildRowLockClause(rowLock: Option[RowLockType]): Unit = {
+      super.buildRowLockClause(rowLock)
+      rowLock.map(_ => b" with RS ")
     }
 
     override def expr(c: Node): Unit = c match {

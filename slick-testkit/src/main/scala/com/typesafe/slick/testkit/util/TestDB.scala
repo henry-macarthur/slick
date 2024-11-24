@@ -35,9 +35,15 @@ object TestDB {
     val transactionIsolation = new Capability("test.transactionIsolation")
     /** Supports select for update row locking */
     val selectForUpdateRowLocking = new Capability("test.selectForUpdateRowLocking")
+    /** Supports select for key share row locking */
+    val selectForKeyShareRowLocking = new Capability("test.selectForKeyShareRowLocking")
+    /** Supports select for share row locking */
+    val selectForShareRowLocking = new Capability("test.selectForShareRowLocking")
+    /** Supports select for key share row locking */
+    val selectForNoKeyShareRowLocking = new Capability("test.selectForNoKeyShareRowLocking")
 
     val all = Set(plainSql, jdbcMeta, jdbcMetaGetClientInfoProperties, jdbcMetaGetFunctions, jdbcMetaGetIndexInfo,
-      transactionIsolation, selectForUpdateRowLocking)
+      transactionIsolation, selectForUpdateRowLocking, selectForShareRowLocking)
   }
 
   /** Copy a file, expanding it if the source name ends with .gz */

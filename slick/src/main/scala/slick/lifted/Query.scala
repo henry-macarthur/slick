@@ -196,8 +196,24 @@ sealed trait QueryBase[T] extends Rep[T]
   /** Specify part of a select statement for update and marked for row level locking */
   def forUpdate: Query[E, U, C] = {
     val generator = new AnonSymbol
-    new WrappingQuery[E, U, C](ForUpdate(generator, toNode), shaped)
+    new WrappingQuery[E, U, C](RowLock(generator, toNode, RowLockType.ForUpdate), shaped)
   }
+
+  def forKeyShare: Query[E, U, C] = {
+    val generator = new AnonSymbol
+    new WrappingQuery[E, U, C](RowLock(generator, toNode, RowLockType.ForKeyShare), shaped)
+  }
+
+  def forShare: Query[E, U, C] = {
+    val generator = new AnonSymbol
+    new WrappingQuery[E, U, C](RowLock(generator, toNode, RowLockType.ForShare), shaped)
+  }
+
+  def forNoKeyUpdate: Query[E, U, C] = {
+    val generator = new AnonSymbol
+    new WrappingQuery[E, U, C](RowLock(generator, toNode, RowLockType.ForNoKeyUpdate), shaped)
+  }
+
   def encodeRef(path: Node): Query[E, U, C] = new Query[E, U, C] {
     val shaped = self.shaped.encodeRef(path)
     def toNode = path

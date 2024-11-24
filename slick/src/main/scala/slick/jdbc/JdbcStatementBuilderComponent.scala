@@ -173,7 +173,7 @@ trait JdbcStatementBuilderComponent { self: JdbcProfile =>
       buildHavingClause(c.having)
       buildOrderByClause(c.orderBy)
       if(!limit0) buildFetchOffsetClause(c.fetch, c.offset)
-      buildForUpdateClause(c.forUpdate)
+      buildRowLockClause(c.rowLock)
       currentUniqueFrom = oldUniqueFrom
     }
 
@@ -276,10 +276,8 @@ trait JdbcStatementBuilderComponent { self: JdbcProfile =>
       }
     }
 
-    protected def buildForUpdateClause(forUpdate: Boolean) = building(OtherPart) {
-      if(forUpdate) {
-        b"\nfor update "
-      }
+    protected def buildRowLockClause(rowLock: Option[RowLockType]) = building(OtherPart) {
+      rowLock.map(r => b"\n ${r.sqlName} ")
     }
 
     protected def buildSelectPart(n: Node): Unit = n match {
@@ -487,7 +485,7 @@ trait JdbcStatementBuilderComponent { self: JdbcProfile =>
 
     def buildUpdate(): SQLBuilder.Result = {
       val (gen, from, where, select) = tree match {
-        case Comprehension(sym, from: TableNode, Pure(select, _), where, None, _, None, None, None, None, false) =>
+        case Comprehension(sym, from: TableNode, Pure(select, _), where, None, _, None, None, None, None, None) =>
           select match {
             case f @ Select(Ref(struct), _) if struct == sym                                         =>
               (sym, from, where, ConstArray(f.field))
@@ -527,8 +525,8 @@ trait JdbcStatementBuilderComponent { self: JdbcProfile =>
       def fail(msg: String) =
         throw new SlickException("Invalid query for DELETE statement: " + msg)
       val (gen, from, where) = tree match {
-        case Comprehension(sym, from, Pure(_, _), where, _, _, None, distinct, fetch, offset, forUpdate) =>
-          if(fetch.isDefined || offset.isDefined || distinct.isDefined || forUpdate)
+        case Comprehension(sym, from, Pure(_, _), where, _, _, None, distinct, fetch, offset, lock) =>
+          if(fetch.isDefined || offset.isDefined || distinct.isDefined || lock.isDefined)
             fail(".take, .drop .forUpdate and .distinct are not supported for deleting")
           from match {
             case from: TableNode => (sym, from, where)

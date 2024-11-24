@@ -34,6 +34,12 @@ import slick.util.QueryInterpolator.queryInterpolator
   *     up in the JDBC meta data, thus the original type is lost.</li>
   *   <li>[[slick.jdbc.JdbcCapabilities.supportsByte]]:
   *     DB2 does not have a BYTE type.</li>
+  *   <li>[[slick.jdbc.JdbcCapabilities.forNoKeyUpdate]]:
+  *     DB2 does not support FOR NO KEY UPDATE row locking.</li>
+  *   <li>[[slick.jdbc.JdbcCapabilities.forShare]]:
+  *     DB2 does not support FOR SHARE row locking.</li>
+  *   <li>[[slick.jdbc.JdbcCapabilities.forKeyShare]]:
+  *     DB2 does not support FOR KEY SHARE row locking.</li>
   * </ul>
   *
   * Note: The DB2 JDBC driver has problems with quoted identifiers. Columns
@@ -49,7 +55,10 @@ trait DB2Profile extends JdbcProfile with JdbcActionComponent.MultipleRowsPerSta
       RelationalCapabilities.reverse -
       JdbcCapabilities.insertOrUpdate -
       JdbcCapabilities.supportsByte -
-      JdbcCapabilities.booleanMetaData
+      JdbcCapabilities.booleanMetaData -
+      JdbcCapabilities.forNoKeyUpdate -
+      JdbcCapabilities.forShare -
+      JdbcCapabilities.forKeyShare
 
   override protected lazy val useServerSideUpsert = true
   override protected lazy val useServerSideUpsertReturning = false
@@ -118,11 +127,9 @@ trait DB2Profile extends JdbcProfile with JdbcActionComponent.MultipleRowsPerSta
       if(o.direction.desc) b += " desc"
     }
 
-    override protected def buildForUpdateClause(forUpdate: Boolean) = {
-      super.buildForUpdateClause(forUpdate)
-      if(forUpdate) {
-        b" with RS "
-      }
+    override protected def buildRowLockClause(rowLock: Option[RowLockType]): Unit = {
+      super.buildRowLockClause(rowLock)
+      rowLock.map(_ => b" with RS ")
     }
   }
 

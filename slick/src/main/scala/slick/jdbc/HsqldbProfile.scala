@@ -36,6 +36,12 @@ import slick.util.QueryInterpolator.queryInterpolator
   *     InsertOrUpdate operations are emulated on the client side if generated
   *     keys should be returned. Otherwise the operation is performed
   *     natively on the server side.</li>
+  *   <li>[[slick.jdbc.JdbcCapabilities.forNoKeyUpdate]]:
+  *     H2 does not support FOR NO KEY UPDATE row locking.</li>
+  *   <li>[[slick.jdbc.JdbcCapabilities.forShare]]:
+  *     H2 does not support FOR SHARE row locking.</li>
+  *   <li>[[slick.jdbc.JdbcCapabilities.forKeyShare]]:
+  *     H2 does not support FOR KEY SHARE row locking.</li>
   * </ul>
   */
 trait HsqldbProfile extends JdbcProfile with JdbcActionComponent.MultipleRowsPerStatementSupport {
@@ -43,7 +49,10 @@ trait HsqldbProfile extends JdbcProfile with JdbcActionComponent.MultipleRowsPer
   override protected def computeCapabilities: Set[Capability] =
     super.computeCapabilities -
       SqlCapabilities.sequenceCurr -
-      JdbcCapabilities.insertOrUpdate
+      JdbcCapabilities.insertOrUpdate -
+      JdbcCapabilities.forNoKeyUpdate -
+      JdbcCapabilities.forShare -
+      JdbcCapabilities.forKeyShare
 
   class HsqldbModelBuilder(mTables: Seq[MTable], ignoreInvalidDefaults: Boolean)(implicit ec: ExecutionContext)
     extends JdbcModelBuilder(mTables, ignoreInvalidDefaults) {

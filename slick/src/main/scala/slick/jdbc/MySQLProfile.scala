@@ -42,6 +42,10 @@ import com.typesafe.config.Config
   *     just as specifying NULL and reports NULL as the default value.
   *     Some other dbms treat queries with no default as NULL default, but
   *     distinguish NULL from no default value in the meta data.</li>
+  *   <li>[[slick.jdbc.JdbcCapabilities.forNoKeyUpdate]]:
+  *     MySQL does not support FOR NO KEY UPDATE row locking.</li>
+  *   <li>[[slick.jdbc.JdbcCapabilities.forKeyShare]]:
+  *     MySQL does not support FOR KEY SHARE row locking.</li>
   * </ul>
   *
   * Sequences are supported through an emulation which requires the schema to
@@ -68,7 +72,9 @@ trait MySQLProfile extends JdbcProfile with JdbcActionComponent.MultipleRowsPerS
       SqlCapabilities.sequenceLimited -
       RelationalCapabilities.joinFull -
       JdbcCapabilities.nullableNoDefault -
-      JdbcCapabilities.distinguishesIntTypes //https://github.com/slick/slick/pull/1735
+      JdbcCapabilities.distinguishesIntTypes - //https://github.com/slick/slick/pull/1735 -
+      JdbcCapabilities.forNoKeyUpdate -
+      JdbcCapabilities.forKeyShare
 
   override protected[this] def loadProfileConfig: Config = {
     if(!GlobalConfig.profileConfig("slick.driver.MySQL").entrySet().isEmpty)

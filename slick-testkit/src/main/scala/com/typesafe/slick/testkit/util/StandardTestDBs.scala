@@ -111,13 +111,18 @@ object StandardTestDBs {
 
   lazy val Postgres = new ExternalJdbcTestDB("postgres") {
     val profile: Profile = PostgresProfile
+    private lazy val additionalCapabilities = Set(
+      TestDB.capabilities.selectForShareRowLocking,
+      TestDB.capabilities.selectForNoKeyShareRowLocking,
+      TestDB.capabilities.selectForKeyShareRowLocking
+    )
     override def localTables(implicit ec: ExecutionContext): DBIO[Vector[String]] =
       ResultSetAction[(String,String,String, String)](_.conn.getMetaData.getTables("", "public", null, null))
         .map(_.filter(_._4.toUpperCase == "TABLE").map(_._3).sorted)
     override def localSequences(implicit ec: ExecutionContext): DBIO[Vector[String]] =
       ResultSetAction[(String,String,String, String)](_.conn.getMetaData.getTables("", "public", null, null))
         .map(_.filter(_._4.toUpperCase == "SEQUENCE").map(_._3).sorted)
-    override def capabilities = super.capabilities - TestDB.capabilities.jdbcMetaGetFunctions
+    override def capabilities = super.capabilities - TestDB.capabilities.jdbcMetaGetFunctions ++ additionalCapabilities
   }
 
   lazy val MySQL = new ExternalJdbcTestDB("mysql") {

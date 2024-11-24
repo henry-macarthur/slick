@@ -49,6 +49,12 @@ import com.typesafe.config.Config
   *     SQL Server's TINYINT is unsigned. It doesn't have a signed Byte-like
   *     type. Slick maps Byte to SMALLINT instead and that's how it shows up
   *     in model and code-generation.</li>
+ *    <li>[[slick.jdbc.JdbcCapabilities.forShare]]:
+ *      SQL Server does not support FOR SHARE row locking.</li>
+ *    <li>[[slick.jdbc.JdbcCapabilities.forKeyShare]]:
+ *      SQL Server does not support FOR KEY SHARE row locking.</li>
+ *    <li>[[slick.jdbc.JdbcCapabilities.forUpdate]]:
+ *      SQL Server does not support FOR UPDATE row locking.</li>
   * </ul>
   *
   * The default type for strings of unlimited length is "VARCHAR(MAX)", falling back to
@@ -77,7 +83,10 @@ trait SQLServerProfile extends JdbcProfile with JdbcActionComponent.MultipleRows
       SqlCapabilities.sequence -
       JdbcCapabilities.supportsByte -
       JdbcCapabilities.returnMultipleInsertKey -
-      JdbcCapabilities.insertMultipleRowsWithSingleStatement
+      JdbcCapabilities.insertMultipleRowsWithSingleStatement -
+      JdbcCapabilities.forNoKeyUpdate -
+      JdbcCapabilities.forShare -
+      JdbcCapabilities.forKeyShare
 
   override protected def computeQueryCompiler =
     super.computeQueryCompiler
@@ -185,14 +194,18 @@ trait SQLServerProfile extends JdbcProfile with JdbcActionComponent.MultipleRows
     override protected def buildFromClause(from: Seq[(TermSymbol, Node)]) = {
       super.buildFromClause(from)
       tree match {
-        // SQL Server "select for update" syntax
-        case c: Comprehension.Base => if(c.forUpdate) b" with (updlock,rowlock) "
+        case c: Comprehension.Base =>
+          c.rowLock match {
+            // SQL Server "select for update" syntax
+            case Some(RowLockType.ForUpdate) => b" with (updlock,rowlock) "
+            case _ =>
+          }
         case _ =>
       }
     }
 
-    override protected def buildForUpdateClause(forUpdate: Boolean) = {
-      // SQLSever doesn't have "select for update" syntax, so use with (updlock,rowlock) in from clause
+    override protected def buildRowLockClause(rowLock: Option[RowLockType]): Unit = {
+      // SQLSever doesn't have "select for ..." syntax, so use with (updlock,rowlock) in from clause
     }
 
     override def expr(n: Node): Unit = n match {

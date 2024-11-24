@@ -38,6 +38,12 @@ import slick.util.QueryInterpolator.queryInterpolator
   *     InsertOrUpdate operations are emulated on the client side if the
   *     data to insert contains an `AutoInc` fields. Otherwise the operation
   *     is performed natively on the server side.</li>
+  *   <li>[[slick.jdbc.JdbcCapabilities.forNoKeyUpdate]]:
+  *     H2 does not support FOR NO KEY UPDATE row locking.</li>
+  *   <li>[[slick.jdbc.JdbcCapabilities.forShare]]:
+  *     H2 does not support FOR SHARE row locking.</li>
+  *   <li>[[slick.jdbc.JdbcCapabilities.forKeyShare]]:
+  *     H2 does not support FOR KEY SHARE row locking.</li>
   * </ul>
   */
 trait H2Profile extends JdbcProfile with JdbcActionComponent.MultipleRowsPerStatementSupport {
@@ -50,7 +56,10 @@ trait H2Profile extends JdbcProfile with JdbcActionComponent.MultipleRowsPerStat
       JdbcCapabilities.returnInsertOther -
       RelationalCapabilities.joinFull -
       JdbcCapabilities.insertOrUpdate -
-      RelationalCapabilities.reverse
+      RelationalCapabilities.reverse -
+      JdbcCapabilities.forNoKeyUpdate -
+      JdbcCapabilities.forShare -
+      JdbcCapabilities.forKeyShare
 
   class H2ModelBuilder(mTables: Seq[MTable], ignoreInvalidDefaults: Boolean)(implicit ec: ExecutionContext)
     extends JdbcModelBuilder(mTables, ignoreInvalidDefaults) {
